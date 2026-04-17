@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pharmacopoea Hungarica · Synonym Flashcards</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f5f0;
+    --surface: #ffffff;
+    --surface2: #f0f0eb;
+    --border: #e0deda;
+    --border2: #cccac4;
+    --accent: #3d6b52;
+    --accent-light: #eaf2ed;
+    --accent2: #5a7fa6;
+    --accent2-light: #eaf0f7;
+    --mastered: #3d6b52;
+    --mastered-light: #eaf2ed;
+    --text: #1a1a18;
+    --text-dim: #8a8880;
+    --text-mid: #555450;
+    --danger: #b34444;
+    --mode-a: #3d6b52;
+    --mode-b: #5a4a8a;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    --shadow-card: 0 2px 8px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.06);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    padding: 20px 36px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .logo { font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+  .logo span { font-weight: 400; color: var(--text-dim); margin-left: 4px; }
+  .stats-row { display: flex; gap: 6px; }
+  .stat { padding: 5px 12px; border-radius: 20px; background: var(--surface2); font-size: 0.72rem; font-weight: 500; color: var(--text-mid); }
+  .stat strong { color: var(--text); font-weight: 600; }
+  .stat.mastered { background: var(--mastered-light); }
+  .stat.mastered strong { color: var(--mastered); }
+  .direction-bar {
+    padding: 14px 36px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .dir-label { font-size: 0.72rem; font-weight: 500; color: var(--text-dim); letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+  .dir-toggle {
+    display: flex;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 3px;
+    flex: 1;
+    max-width: 540px;
+  }
+  .dir-btn {
+    flex: 1; padding: 8px 14px; border-radius: 7px; border: none;
+    background: transparent; color: var(--text-dim);
+    font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 400;
+    cursor: pointer; transition: all 0.18s; text-align: center; line-height: 1.4;
+  }
+  .dir-btn .arrow { font-size: 0.65rem; display: block; margin-top: 1px; opacity: 0.7; }
+  .dir-btn:hover { background: var(--surface); color: var(--text); }
+  .dir-btn.active-a { background: var(--surface); color: var(--mode-a); font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .dir-btn.active-b { background: var(--surface); color: var(--mode-b); font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .dir-btn.active-both { background: var(--surface); color: var(--text); font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .controls {
+    padding: 14px 36px;
+    border-bottom: 1px solid var(--border);
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    background: var(--surface);
+  }
+  .search-wrap { position: relative; flex: 1; min-width: 180px; max-width: 300px; }
+  .search-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-dim); }
+  .search-wrap input {
+    width: 100%; padding: 8px 12px 8px 34px;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+    outline: none; transition: border-color 0.18s, box-shadow 0.18s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(61,107,82,0.1); background: var(--surface); }
+  .search-wrap input::placeholder { color: var(--text-dim); }
+  .filter-chips { display: flex; gap: 5px; flex-wrap: wrap; }
+  .chip {
+    padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
+    background: transparent; color: var(--text-mid); font-size: 0.75rem; font-weight: 400;
+    cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .chip.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); font-weight: 500; }
+  .btn {
+    padding: 7px 16px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text-mid);
+    font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--border2); background: var(--surface); color: var(--text); }
+  .btn.danger:hover { border-color: var(--danger); color: var(--danger); background: #fff5f5; }
+  main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 36px 24px; gap: 20px; }
+  .progress-wrap { width: 100%; max-width: 560px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-dim); margin-bottom: 8px; }
+  .progress-bar { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); border-radius: 4px; transition: width 0.35s ease; }
+  .card-area { perspective: 1400px; width: 100%; max-width: 560px; }
+  .card-inner {
+    position: relative; width: 100%; height: 260px;
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+  .card-inner.flipped { transform: rotateY(180deg); }
+  .card-face {
+    position: absolute; inset: 0; backface-visibility: hidden;
+    border-radius: 16px; border: 1px solid var(--border);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 36px 48px; text-align: center;
+    background: var(--surface); box-shadow: var(--shadow-card); transition: box-shadow 0.2s;
+  }
+  .card-face:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.09), 0 12px 40px rgba(0,0,0,0.07); }
+  .card-face.back { transform: rotateY(180deg); }
+  .card-face.front[data-dir="a"] { border-left: 3px solid var(--mode-a); }
+  .card-face.front[data-dir="b"] { border-left: 3px solid var(--mode-b); }
+  .card-dir-badge {
+    position: absolute; top: 16px; left: 20px;
+    font-size: 0.62rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 20px;
+  }
+  .badge-a { background: var(--accent-light); color: var(--mode-a); }
+  .badge-b { background: #f0edf8; color: var(--mode-b); }
+  .card-mastered-badge {
+    position: absolute; top: 16px; right: 20px;
+    font-size: 0.62rem; font-weight: 600; letter-spacing: 0.06em;
+    color: var(--mastered); text-transform: uppercase; display: none;
+  }
+  .show-mastered .card-mastered-badge { display: block; }
+  .show-mastered { border-color: rgba(61,107,82,0.35) !important; }
+  .card-label { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 14px; }
+  .card-face.back .card-label { color: var(--accent2); }
+  .card-word { font-family: 'Inter', sans-serif; font-size: clamp(1.15rem, 3.5vw, 1.75rem); font-weight: 500; line-height: 1.35; color: var(--text); letter-spacing: -0.02em; }
+  .card-face.back .card-word { color: var(--accent2); }
+  .flip-hint { font-size: 0.68rem; color: var(--text-dim); margin-top: 14px; text-align: center; }
+  kbd { background: var(--surface); border: 1px solid var(--border2); border-radius: 4px; padding: 1px 6px; font-family: 'Inter', sans-serif; font-size: 0.65rem; color: var(--text-mid); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+  .card-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .btn-nav {
+    padding: 10px 24px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text-mid);
+    font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; box-shadow: var(--shadow);
+  }
+  .btn-nav:hover:not(:disabled) { border-color: var(--border2); color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .btn-nav:disabled { opacity: 0.3; cursor: default; box-shadow: none; }
+  .btn-master {
+    padding: 10px 24px; border-radius: 10px; border: 1px solid rgba(61,107,82,0.4);
+    background: var(--surface); color: var(--mastered);
+    font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; box-shadow: var(--shadow);
+  }
+  .btn-master:hover { background: var(--mastered-light); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .btn-master.is-on { background: var(--mastered); color: white; border-color: var(--mastered); }
+  .keyboard-hints { font-size: 0.67rem; color: var(--text-dim); display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+  .empty-state { padding: 60px 20px; text-align: center; color: var(--text-dim); font-size: 0.85rem; }
+  @media (max-width: 520px) {
+    header, .controls, .direction-bar { padding-left: 18px; padding-right: 18px; }
+    main { padding: 22px 14px; }
+    .card-face { padding: 28px 24px; }
+    .card-inner { height: 230px; }
+    .dir-btn .arrow { display: none; }
+    .stats-row { gap: 4px; }
+    .stat { padding: 4px 9px; font-size: 0.68rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Pharmacopoea Hungarica <span>/ Synonym Flashcards</span></div>
+  <div class="stats-row">
+    <div class="stat">Total <strong id="statTotal">218</strong></div>
+    <div class="stat">Deck <strong id="statShown">218</strong></div>
+    <div class="stat mastered">Mastered <strong id="statMastered">0</strong></div>
+  </div>
+</header>
+
+<div class="direction-bar">
+  <span class="dir-label">Direction</span>
+  <div class="dir-toggle">
+    <button class="dir-btn active-a" data-dir="a">
+      Synonym → Official
+      <span class="arrow">see synonym · recall official name</span>
+    </button>
+    <button class="dir-btn" data-dir="b">
+      Official → Synonym
+      <span class="arrow">see official name · recall synonym</span>
+    </button>
+    <button class="dir-btn" data-dir="both">
+      Mixed ⇄
+      <span class="arrow">both directions, shuffled</span>
+    </button>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="search-wrap">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Search…">
+  </div>
+  <div class="filter-chips">
+    <button class="chip active" data-filter="all">All</button>
+    <button class="chip" data-filter="unmastered">Unmastered</button>
+    <button class="chip" data-filter="mastered">Mastered</button>
+  </div>
+  <button class="btn" id="shuffleBtn">⇄ Shuffle</button>
+  <button class="btn danger" id="resetBtn">↺ Reset</button>
+</div>
+
+<main>
+  <div class="progress-wrap" id="progressSection">
+    <div class="progress-label">
+      <span id="progressText">Card 1 of 218</span>
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="card-area" id="cardArea">
+    <div class="card-inner" id="cardInner">
+      <div class="card-face front" id="cardFront">
+        <span class="card-dir-badge badge-a" id="dirBadge">Synonym</span>
+        <span class="card-mastered-badge">✓ Mastered</span>
+        <div class="card-label" id="frontLabel">Synonym name</div>
+        <div class="card-word" id="frontWord">—</div>
+      </div>
+      <div class="card-face back">
+        <div class="card-label" id="backLabel">Official name · Pharmacopoea Hungarica</div>
+        <div class="card-word" id="backWord">—</div>
+      </div>
+    </div>
+    <div class="flip-hint">Click to reveal · <kbd>Space</kbd> flip · <kbd>←</kbd><kbd>→</kbd> navigate · <kbd>M</kbd> mastered</div>
+  </div>
+
+  <div class="card-actions" id="cardActions">
+    <button class="btn-nav" id="prevBtn" onclick="navigate(-1)">← Prev</button>
+    <button class="btn-master" id="masterBtn" onclick="toggleMaster()">Mark as mastered</button>
+    <button class="btn-nav" id="nextBtn" onclick="navigate(1)">Next →</button>
+  </div>
+
+  <div class="empty-state" id="emptyState" style="display:none">No cards match your filter.</div>
+</main>
+
+<script>
+const RAW = [
+  ["Acetaminophen","Paracetamolum"],["Acetphenetidin","Phenacetinum"],["Acidum ascorbinicum","Acidum ascorbicum"],["Acidum carbolicum","Phenolum"],["Acidum carbolicum liquefactum","Phenolum liquefactum"],["Acidum hydrochloricum concentratissimum","Acidum hydrochloridum concentratum"],["Acidum muriaticum concentratissimum","Acidum hydrochloridum concentratum"],["Acidum muriaticum dilutum","Acidum hydrochloridum dilutum"],["Acidum oleinicum","Acidum oleicum"],["Acidum silicicum colloidale","Silica colloidalis anhydrica"],["Acidum stearinicum","Acidum stearicum"],["Acisal","Acidum acetylsalicylicum"],["Adeps lanae anhydricus","Adeps lanae"],["Adeps lanae hydrosus","Adeps lanae cum aqua"],["Adeps neutralis","Adeps solidus 50"],["Adeps pro suppositorio","Adeps solidus 50"],["Aerosil","Silica colloidalis anhydrica"],["Aerosil R 972","Silica colloidalis anhydrica"],["Aethanolum","Ethanolum (96 per centum)"],["Aethylmorphinum hydrochloricum","Ethylmorphini hydrochloridum"],["Aethylmorphinum muriaticum","Ethylmorphini hydrochloridum"],["Akriflavin","Acriflavinii monochloricum"],["Alcohol cetylstearylicus","Alcoholum cetylicus et stearylicus"],["Alcoholes lanae","Alcoholes adipis lanae"],["Algopyrin","Metamizolum natricum monohydricum"],["Alum","Alumen"],["Amidazophenum","Aminophenazonum"],["Amidopyrin","Aminophenazonum"],["Anaesthesin","Benzocainum"],["Analginum","Metamizolum natricum monohydricum"],["Antipyrin","Phenazonum"],["Aspirin","Acidum acetylsalicylicum"],["Avicel","Cellulosum microcristallinum"],["Azophenum","Phenazonum"],["Baking soda","Natrii hydrogenocarbonas"],["Barbituralnatrium","Barbitalum natricum"],["Beet sugar","Saccharum"],["Burow-ointment","Unguentum aluminii acetici tartarici"],["Burow-solution","Aluminium aceticum tartaricum solutum"],["Butyrum cacao","Theobromatis oleum"],["Cacisal","Calcium acetylsalicylicum"],["Calcium acetylosalicylicum","Calcium acetylsalicylicum"],["Calcium carbonicum praecipitatum","Calcii carbonas"],["Calcium chloratum crystallisatum","Calcii chloridum hexahydricum"],["Calcium phosphoricum","Calcii hydrogeophosphas dihydricus"],["Carbowax 1540","Macrogola"],["Carbowax 400","Macrogola"],["Carbowax 4000","Macrogola"],["Caustic soda","Natrii hydroxidum"],["Cetostearolum","Alcoholum cetylicus et stearylicus"],["Chamomillae flos","Matricariae flos"],["Chininum sulfuricum","Chinidini sulfas"],["Chloralum hydratum","Chlorali hydras"],["Chlorocid","Chloramphenicolum"],["Cod liver oil","Iecoris aselli oleum"],["Codeinum muriaticum","Codeini hydrochloridum dihydricum"],["Collodium duplex","Collodium"],["Dermatol","Bismuthi subgallas"],["Dextrose","Glucosum anhydricum"],["Dicain","Tetracaini hydrochloridum"],["Dionin","Ethylmorphini hydrochloridum"],["Eggosalil","Salicylamidum"],["Elain","Acidum oleicum"],["Enteroseptol","Cliochinolum"],["Ephedrinum muriaticum","Ephedrini racemici hydrochloridum"],["Epherit","Ephedrini racemici hydrochloridum"],["Epsom salt","Magnesii sulfas heptahydricus"],["Esma P","Paraffinum microcrystallinum"],["Euflavin","Acriflavinii monochloridum"],["Evipan","Hexobarbitalum"],["Evipan-Natrium","Hexobarbitalum natricum"],["Ferrum sulfuricum oxydulatum","Ferrosi sulfas heptahydricus"],["Flavakridin","Acriflavinii monochloricum"],["Formalin","Formaldehydi solutio (35 per centum)"],["Fructose","Fructosum"],["Glacial acetic acid","Acidum aceticum glaciale"],["Glaubersalt","Natrii sulfas decahydricus"],["Grape sugar","Glucosum anhydricum"],["HEC","Hydroxyethylcellulosum"],["Ichthyolum","Ichthammolum"],["Istopirin","Acidum acetylsalicylicum"],["Jodchloroxychinolinum","Clioquinolum"],["Jodum","Iodum"],["Kalium bitartaricum","Kalii hydrogenotartaras"],["Kalium citricum","Kalii citras"],["Kalium hypermanganicum","Kalii permanganas"],["Kalium jodatum","Kalii iodidum"],["Kalmopyrin","Calcium acetylsalicylicum"],["Kaolinum","Kaolinum ponderosum"],["Klion","Metronidazolum"],["Lac sulfuris","Sulfur ad usum externum"],["Lactoflavin","Riboflavinum"],["Lanolin","Adeps lanae cum aqua"],["Lanoline","Adeps lanae"],["Lanolinum anhydricum","Adeps lanae"],["Lapis","Argenti nitras"],["Levulose","Fructosum"],["Liquid soda","Natrii hydroxidum"],["Liquor ammoniae","Ammonia soluta 10%"],["Liquor Burowi","Aluminium aceticum tartaricum solutum"],["Liquor formaldehydi","Formaldehydi solutio (35 per centum)"],["Liquor hydrogenii hyperoxydati concentratus","Hydrogenii peroxidum 30 per centum"],["Luminal","Phenobarbitalum"],["Luminal-Natrium","Phenobarbitalum natricum"],["Lunar caustic","Argenti nitras"],["Magnesia alba","Magnesii subcarbonas levis"],["Magnesia usta","Magnesii oxidum leve"],["Magnesium carbonicum hydroxydatum levissimum","Magnesii subcarbonas levis"],["Magnesium oxydatum levissimum","Magnesii oxidum leve"],["Magnesium sulfuricum crystallisatum","Magnesii sulfas heptahydricus"],["Medinal","Barbitalum natricum"],["Mercurochrom","Merbrominum"],["Metilparaben","Methylis parahydroxybenzoas"],["Miglyol 812","Triglycerida saturata media"],["Mikulitz ointment","Unguentum argenti nitrici"],["Milk sugar","Lactosum monohydricum"],["Mycostatin","Nystatinum"],["Myrj 52","Macrogoli stearas"],["Natrium biboracicum","Borax"],["Natrium bicarbonicum","Natrii hydrogenocarbonas"],["Natrium boricum","Borax"],["Natrium carbonicum crystallisatum","Natrii carbonas decahydricus"],["Natrium citricum","Natrii citras"],["Natrium jodatum","Natrii iodidum"],["Natrium phosphoricum acidum","Natrii dihydrogenophosphas dihydricus"],["Natrium phosphoricum crystallisatum","Dinatrii phosphas dodecahydricus"],["Natrium phosphoricum monobasicum","Natrii dihydrogenophosphas dihydricus"],["Natrium sulfuricum crystallisatum","Natrii sulfas decahydricus"],["Natrium-EDTA","Dinatrii edetas"],["Neomagnol","Chlorogenium"],["Niacin","Nicotinamidum"],["Nipagin M","Methylis parahydroxybenzoas"],["Noraminophenazonum natrium mesylicum","Metamizolum natricum monohydricum"],["Norcainum","Benzocainum"],["Novalgin","Metamizolum natricum monohydricum"],["Novamidazophenum","Metamizolum natricum monohydricum"],["Novatropin","Homatropini methylbromidum"],["Novocain","Procaini hydrochloridum"],["Novopan","Hexobarbitalum"],["Oleum cacao","Theobromatis oleum"],["Oleum Morrhuae","Iecoris aselli oleum"],["Oleum paraffini","Paraffinum liquidum"],["Panadol","Paracetamolum"],["Pantocain","Tetracaini hydrochloridum"],["Papaverinum muriaticum","Papaverini hydrochloridum"],["Pasta Lassari","Pasta zinci oxydati salicylata"],["Pasta zinci oleosa","Pasta zinci oxydati oleosa"],["Phenomerborum","Phenylhydrargyri boras"],["Pickling salt","Kalii nitras"],["Polivinilpirrolidon","Povidonum"],["Polyaethylenglycolum 1540","Macrogola"],["Polyaethylenglycolum 400","Macrogola"],["Polyaethylenglycolum 4000","Macrogola"],["Polyoxaethenum 1540","Macrogola"],["Polyoxaethenum 400","Macrogola"],["Polyoxaethenum 4000","Macrogola"],["Polyoxaethenum stearinicum","Macrogoli stearas"],["Protargol","Argentum proteinicum"],["Pulvis Doveri","Pulvis opii et ipecacuanhae"],["Pulvis ipecacuanhae opatus","Pulvis opii et ipecacuanhae"],["PVP","Povidonum"],["Pyramidon","Aminophenazonum"],["Rennet","Pepsini pulvis"],["Saccharimidum","Saccharinum natricum"],["Saccharum lactis","Lactosum monohydricum"],["Sal ammoniac","Ammonii chloridum"],["Sal ammoniac spirit","Ammonia soluta 10%"],["Saltpetre","Kalii nitras"],["Sevenal","Phenobarbitalum"],["Sevenal-Natrium","Phenobarbitalum natricum"],["Sirupus kalii guaiacolsulfonicum","Sirupus sulfoguaiacoli"],["Solutio Burowi","Aluminium aceticum tartaricum solutum"],["Solutio jodi spirituosa","Solutio iodi alcoholica"],["Sorbitanum monolaurinicum","Sorbitani lauras"],["Sorboxaethenum laurinicum","Polysorbatum 20"],["Sorboxaethenum monostearinicum","Polysorbatum 61"],["Sorboxaethenum oleinicum","Polysorbatum 80"],["Sorboxaethenum stearinicum","Polysorbatum 60"],["Span 20","Sorbitani lauras"],["Spermacetum","Cetylis palmitas"],["Spiritus concentratissimus","Ethanolum (96 per centum)"],["Spiritus dilutus","Alcoholum dilutum 70%"],["Spiritus vini concentratissimus","Ethanolum (96 per centum)"],["Spiritus vini dilutus","Alcoholum dilutum 70%"],["Succus liquiritiae","Extractum liquiritiae venale"],["Sucrosum","Saccharum"],["Sulfadimethylpyrimidinum","Sulfadimidinum"],["Sulfamethazin","Sulfadimidinum"],["Sulfur depuratum","Sulfur pulveratum lotum"],["Sulfur sublimatum lotum","Sulfur pulveratum lotum"],["Superseptyl","Sulfadimidinum"],["Talcum venetum","Talcum"],["Tannalbin","Albumen tannicum"],["Tannin","Tanninum"],["Tartar","Kalii hydrogenotartaras"],["Tartaric acid","Acidum tartaricum"],["Terpinum hydratum","Terpinum"],["Texapon","Natrii laurilsulfas"],["Theocin","Theophyllinum"],["Tinctura valerianae spirituosa","Tinctura valerianae alcoholica"],["Tripaflavin","Acriflavinii monochloricum"],["Tromethaminum","Trometamolum"],["Tween 20","Polysorbatum 20"],["Tween 60","Polysorbatum 60"],["Tween 61","Polysorbatum 61"],["Tween 80","Polysorbatum 80"],["Unguentum ad manum","Unguentum hydrosum"],["Unguentum Burowi","Unguentum aluminii acetici tartarici"],["Unguentum polyoxaetheni","Unguentum macrogoli"],["Urea pura","Ureum"],["Veronal","Barbitalum"],["Veronal-Natrium","Barbitalum natricum"],["Vioform","Clioquinolum"],["Vitamin B1","Thiamini hydrochloridum"],["Vitamin B2","Riboflavinum"],["Vitamin C","Acidum ascorbicum"],["Xanthacridinum","Acriflavinii monochloricum"],["Xylocain","Lidocainum"]
+];
+
+let mastered = JSON.parse(localStorage.getItem('ph_mastered') || '{}');
+let direction = 'a', filterMode = 'all', searchQuery = '';
+let deck = [], current = 0, flipped = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildDeck() {
+  let base = RAW.map((d, i) => ({ id: i, synonym: d[0], official: d[1] }));
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    base = base.filter(c => c.synonym.toLowerCase().includes(q) || c.official.toLowerCase().includes(q));
+  }
+  if (filterMode === 'mastered')   base = base.filter(c => mastered[c.id]);
+  if (filterMode === 'unmastered') base = base.filter(c => !mastered[c.id]);
+  if (direction === 'a')
+    deck = base.map(c => ({ id: c.id, front: c.synonym, back: c.official, dir: 'a' }));
+  else if (direction === 'b')
+    deck = base.map(c => ({ id: c.id, front: c.official, back: c.synonym, dir: 'b' }));
+  else
+    deck = shuffle(base.map(c => {
+      const useB = Math.random() < 0.5;
+      return { id: c.id, front: useB ? c.official : c.synonym, back: useB ? c.synonym : c.official, dir: useB ? 'b' : 'a' };
+    }));
+  current = 0; flipped = false;
+  document.getElementById('cardInner').classList.remove('flipped');
+}
+
+function renderCard() {
+  const show = deck.length > 0;
+  document.getElementById('cardArea').style.display        = show ? '' : 'none';
+  document.getElementById('cardActions').style.display     = show ? 'flex' : 'none';
+  document.getElementById('progressSection').style.display = show ? '' : 'none';
+  document.getElementById('emptyState').style.display      = show ? 'none' : 'block';
+  if (!show) { updateStats(); return; }
+  const card = deck[current];
+  document.getElementById('frontWord').textContent = card.front;
+  document.getElementById('backWord').textContent  = card.back;
+  const isA = card.dir === 'a';
+  const badge = document.getElementById('dirBadge');
+  badge.textContent = isA ? 'Synonym' : 'Official name';
+  badge.className   = 'card-dir-badge badge-' + card.dir;
+  document.getElementById('cardFront').setAttribute('data-dir', card.dir);
+  document.getElementById('frontLabel').textContent = isA ? 'Synonym name' : 'Official name · Pharmacopoea Hungarica';
+  document.getElementById('backLabel').textContent  = isA ? 'Official name · Pharmacopoea Hungarica' : 'Synonym name';
+  const isMastered = !!mastered[card.id];
+  document.getElementById('cardFront').classList.toggle('show-mastered', isMastered);
+  document.getElementById('masterBtn').classList.toggle('is-on', isMastered);
+  document.getElementById('masterBtn').textContent = isMastered ? '✓ Mastered' : 'Mark as mastered';
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === deck.length - 1;
+  const pct = deck.length > 1 ? Math.round((current / (deck.length - 1)) * 100) : 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `Card ${current + 1} of ${deck.length}`;
+  document.getElementById('progressPct').textContent  = pct + '%';
+  updateStats();
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent    = RAW.length;
+  document.getElementById('statShown').textContent    = deck.length;
+  document.getElementById('statMastered').textContent = Object.keys(mastered).length;
+}
+
+function navigate(dir) {
+  current = Math.max(0, Math.min(deck.length - 1, current + dir));
+  flipped = false;
+  document.getElementById('cardInner').classList.remove('flipped');
+  renderCard();
+}
+
+function toggleMaster() {
+  if (!deck.length) return;
+  const id = deck[current].id;
+  if (mastered[id]) delete mastered[id]; else mastered[id] = true;
+  localStorage.setItem('ph_mastered', JSON.stringify(mastered));
+  renderCard();
+}
+
+function flipCard() {
+  flipped = !flipped;
+  document.getElementById('cardInner').classList.toggle('flipped', flipped);
+}
+
+document.querySelectorAll('.dir-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    direction = btn.dataset.dir;
+    document.querySelectorAll('.dir-btn').forEach(b => b.className = 'dir-btn');
+    btn.classList.add('active-' + direction);
+    buildDeck(); renderCard();
+  });
+});
+
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    filterMode = chip.dataset.filter;
+    buildDeck(); renderCard();
+  });
+});
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchQuery = e.target.value.trim(); buildDeck(); renderCard();
+});
+
+document.getElementById('shuffleBtn').addEventListener('click', () => {
+  deck = shuffle(deck); current = 0; flipped = false;
+  document.getElementById('cardInner').classList.remove('flipped');
+  renderCard();
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (confirm('Reset all mastered marks?')) {
+    mastered = {}; localStorage.removeItem('ph_mastered'); renderCard();
+  }
+});
+
+document.getElementById('cardInner').addEventListener('click', flipCard);
+
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space')     { e.preventDefault(); flipCard(); }
+  if (e.code === 'ArrowLeft')  navigate(-1);
+  if (e.code === 'ArrowRight') navigate(1);
+  if (e.key === 'm' || e.key === 'M') toggleMaster();
+});
+
+buildDeck();
+renderCard();
+</script>
+</body>
+</html>
